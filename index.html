@@ -46,9 +46,14 @@
     <button onclick="addRow()">+Ребро</button>
     <button onclick="drawGraph()">Графнуть</button>
     <button onclick="deleteLargestCycle()">Удалить самый большой цикл</button>
+    <button onclick="showCyclesExceptLargest()">Показать циклы (кроме самого большого)</button>
 
     <div id="graph-container"></div>
   </div>
+  <div id="cycles-output" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9;">
+    <strong>🔁 Циклы (кроме самого большого):</strong>
+    <div id="cycles-list"></div>
+  </div>    
 
   <script src="script.js"></script>
 </body>

@@ -215,3 +215,69 @@ function getAdjacencyMatrix(edges) {
 
   return matrix;
 }
+
+function showCyclesExceptLargest() {
+  const rows = document.querySelectorAll("#edges-table tbody tr");
+  const edges = [];
+
+  rows.forEach((row) => {
+    const inputs = row.querySelectorAll("input");
+    if (inputs.length >= 2) {
+      const from = parseInt(inputs[0].value);
+      const to = parseInt(inputs[1].value);
+      if (!isNaN(from) && !isNaN(to)) {
+        edges.push([from, to]);
+      }
+    }
+  });
+
+  const graph = buildGraph(edges);
+  const allCycles = [];
+
+  for (let startNode of graph.keys()) {
+    const visited = new Set();
+    dfs(graph, startNode, startNode, visited, [], allCycles);
+  }
+
+  const uniqueCycles = filterUniqueCycles(allCycles);
+  const outputDiv = document.getElementById("cycles-list");
+
+  if (uniqueCycles.length === 0) {
+    outputDiv.innerHTML = "<em>Циклов не найдено.</em>";
+    return;
+  }
+
+  const largest = uniqueCycles.reduce((max, cycle) => cycle.length > max.length ? cycle : max, []);
+  const filtered = uniqueCycles.filter(cycle => cycle.join() !== largest.join());
+
+  if (filtered.length === 0) {
+    outputDiv.innerHTML = "<em>Других циклов, кроме самого большого, не найдено.</em>";
+    return;
+  }
+
+  // 🔥 Удалим дубликаты окончательно по нормализованному виду
+  const seen = new Set();
+  const uniqueDisplay = [];
+
+  for (let cycle of filtered) {
+    const key = normalizeCycle(cycle).join("-");
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueDisplay.push(cycle);
+    }
+  }
+
+  outputDiv.innerHTML = uniqueDisplay
+    .map((cycle, idx) => `Цикл ${idx + 1}: [${cycle.join(" → ")}]`)
+    .join("<br>");
+}
+
+function normalizeCycle(cycle) {
+  const path = cycle.slice(0, -1);
+  const rotations = path.map((_, i) => path.slice(i).concat(path.slice(0, i)));
+  const reversed = rotations.map(r => [...r].reverse());
+  const all = rotations.concat(reversed);
+  all.sort((a, b) => a.join(',').localeCompare(b.join(',')));
+  const canonical = all[0];
+  return [...canonical, canonical[0]];
+}
